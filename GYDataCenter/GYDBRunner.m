@@ -86,6 +86,52 @@ static const double kTransactionTimeInterval = 1;
 
 #pragma mark - Data Manipulation
 
+- (NSArray *)queryOfClass:(Class<GYModelObjectProtocol>)modelClass
+               properties:(NSArray *)properties
+                    where:(NSString *)where
+                arguments:(NSArray *)arguments {
+    NSMutableArray *objects = [[NSMutableArray alloc] init];
+    
+    NSString *columnSql = @"*";
+    if ([modelClass fts] && [modelClass primaryKey] && !properties) {
+        properties = [GYDCUtilities persistentPropertiesForClass:modelClass];
+    }
+    if (properties.count) {
+        columnSql = [self columnSqlForClass:modelClass properties:properties withPrefix:NO];
+    }
+    
+    NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"SELECT %@ FROM %@",
+                            columnSql,
+                            [modelClass tableName]];
+    if (where) {
+        [sql appendFormat:@" %@", where];
+    }
+    
+    NSMutableArray *result = @[].mutableCopy;
+    
+    GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:modelClass];
+    [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+        FMResultSet *resultSet = [db executeQuery:sql
+                             withArgumentsInArray:arguments];
+        while ([resultSet next]) {
+            NSMutableDictionary *data = @{}.mutableCopy;
+            for (int i = 0; i < properties.count; i ++) {
+                NSString *columnName = [resultSet columnNameForIndex:i];
+                NSString *propertyName = [GYDCUtilities propertyForClass:modelClass
+                                                                  column:columnName];
+                id value = [self valueForClass:modelClass
+                                      property:propertyName
+                                     resultSet:resultSet
+                                         index:i];
+                if (value)
+                    data[propertyName] = value;
+            }
+            [result addObject:data];
+        }
+    }];
+    return result;
+}
+
 - (NSArray *)objectsOfClass:(Class<GYModelObjectProtocol>)modelClass
                  properties:(NSArray *)properties
                       where:(NSString *)where

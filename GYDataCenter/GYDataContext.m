@@ -158,6 +158,21 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     return result;
 }
 
+- (NSArray *)query:(Class<GYModelObjectProtocol>)modelClass
+        properties:(NSArray *)properties
+             where:(NSString *)where
+         arguments:(NSArray *)arguments {
+    GYDataContextQueue *queue = [self queueForDBName:[modelClass dbName]];
+    __block NSArray *result;
+    [queue dispatchSync:^{
+        result = [_dbRunner queryOfClass:modelClass
+                              properties:properties
+                                   where:where
+                               arguments:arguments];
+    }];
+    return result;
+}
+
 - (NSArray *)getObjects:(Class<GYModelObjectProtocol>)leftClass
              properties:(NSArray *)leftProperties
                 objects:(Class<GYModelObjectProtocol>)rightClass

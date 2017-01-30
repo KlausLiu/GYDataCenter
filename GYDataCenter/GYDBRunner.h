@@ -30,6 +30,25 @@ typedef NS_ENUM(NSInteger, GYSQLJoinType) {
 + (GYDBRunner *)sharedInstanceWithCacheDelegate:(id<GYDBCache>)delegate;
 
 /**
+ * not model object
+ *
+ * @param modelClass Class of the model objects that you want to fetch.
+ *
+ * @param properties Properties you need. Pass nil to get values of all properties.
+ *
+ * @param where Where clause of SQL. Use '?'s as placeholders for arguments.
+ *
+ * @param arguments Values to bind to the where clause.
+ *
+ * @return [{propertyName:value,...},...]
+ *
+ */
+- (NSArray *)queryOfClass:(Class<GYModelObjectProtocol>)modelClass
+               properties:(NSArray *)properties
+                    where:(NSString *)where
+                arguments:(NSArray *)arguments;
+
+/**
  *
  * @param modelClass Class of the model objects that you want to fetch.
  *

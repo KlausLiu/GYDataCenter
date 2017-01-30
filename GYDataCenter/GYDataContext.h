@@ -51,6 +51,25 @@
                   where:(NSString *)where
               arguments:(NSArray *)arguments;
 
+/**
+ * NO Cache
+ *
+ * @param modelClass Class of the model objects that you want to fetch.
+ *
+ * @param properties Properties you need. Pass nil to get values of all properties.
+ *
+ * @param where Where clause of SQL. Use '?'s as placeholders for arguments.
+ *
+ * @param arguments Values to bind to the where clause.
+ *
+ * @return [{propertyName:value,...},...]
+ *
+ */
+- (NSArray *)query:(Class<GYModelObjectProtocol>)modelClass
+        properties:(NSArray *)properties
+             where:(NSString *)where
+         arguments:(NSArray *)arguments;
+
 /** Join two tables.
  *
  * @param leftClass Class of the first join table.

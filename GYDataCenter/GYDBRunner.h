@@ -23,6 +23,8 @@ typedef NS_ENUM(NSInteger, GYSQLJoinType) {
 
 @end
 
+@class FMResultSet;
+
 @interface GYDBRunner : NSObject
 
 @property (nonatomic, weak) id<GYDBCache> cacheDelegate;
@@ -47,6 +49,17 @@ typedef NS_ENUM(NSInteger, GYSQLJoinType) {
                properties:(NSArray *)properties
                     where:(NSString *)where
                 arguments:(NSArray *)arguments;
+
+/**
+ *  execute sql in db
+ *
+ *  @param sql
+ *  @param dbName
+ *  @param resultSetBlock   handle FMResultSet
+ */
+- (void)queryWithSQL:(NSString *)sql
+            inDbName:(NSString *)dbName
+      resultSetBlock:(void(^)(FMResultSet *))resultSetBlock;
 
 /**
  *

@@ -128,8 +128,24 @@ static const double kTransactionTimeInterval = 1;
             }
             [result addObject:data];
         }
+        [resultSet close];
     }];
     return result;
+}
+
+- (void)queryWithSQL:(NSString *)sql
+            inDbName:(NSString *)dbName
+      resultSetBlock:(void(^)(FMResultSet *))resultSetBlock {
+    GYDatabaseInfo *databaseInfo = [self databaseInfoForDbName:dbName];
+    [databaseInfo.databaseQueue asyncInDatabase:^(FMDatabase *db) {
+        FMResultSet *resultSet = [db executeQuery:sql];
+        while ([resultSet next]) {
+            if (resultSetBlock) {
+                resultSetBlock(resultSet);
+            }
+        }
+        [resultSet close];
+    }];
 }
 
 - (NSArray *)objectsOfClass:(Class<GYModelObjectProtocol>)modelClass
@@ -164,6 +180,7 @@ static const double kTransactionTimeInterval = 1;
             id object = [self objectOfClass:modelClass resultSet:resultSet range:NSMakeRange(0, length) properties:indexedProperties];
             [objects addObject:object];
         }
+        [resultSet close];
     }];
     
     return objects;
@@ -228,6 +245,7 @@ static const double kTransactionTimeInterval = 1;
             [leftObjects addObject:[self objectOfClass:leftClass resultSet:resultSet range:NSMakeRange(0, leftLength) properties:leftIndexedProperties]];
             [rightObjects addObject:[self objectOfClass:rightClass resultSet:resultSet range:NSMakeRange(leftLength, rightLength) properties:rightIndexedProperties]];
         }
+        [resultSet close];
     }];
     
     return @[ leftObjects, rightObjects ];
@@ -400,6 +418,7 @@ static const double kTransactionTimeInterval = 1;
             id objectId = [resultSet objectForColumnName:primaryKeyColumn];
             [ids addObject:objectId];
         }
+        [resultSet close];
     }];
     
     return ids;
@@ -772,6 +791,7 @@ static const double kTransactionTimeInterval = 1;
         while ([resultSet next]) {
             [columns addObject:[resultSet stringForColumn:@"name"]];
         }
+        [resultSet close];
     }];
     return columns;
 }
@@ -808,6 +828,7 @@ static const double kTransactionTimeInterval = 1;
                 [indices addObject:[resultSet stringForColumn:@"name"]];
             }
         }
+        [resultSet close];
     }];
     return indices;
 }

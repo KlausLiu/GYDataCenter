@@ -70,6 +70,18 @@
              where:(NSString *)where
          arguments:(NSArray *)arguments;
 
+/**
+ *  execute sql in db
+ *  NO Cache
+ *
+ *  @param sql
+ *  @param dbName
+ *  @param resultSetBlock   handle FMResultSet
+ */
+- (void)queryWithSQL:(NSString *)sql
+            inDbName:(NSString *)dbName
+      resultSetBlock:(void(^)(FMResultSet *))resultSetBlock;
+
 /** Join two tables.
  *
  * @param leftClass Class of the first join table.

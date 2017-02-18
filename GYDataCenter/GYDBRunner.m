@@ -251,6 +251,63 @@ static const double kTransactionTimeInterval = 1;
     return @[ leftObjects, rightObjects ];
 }
 
+- (NSArray *)objectsOfClass:(Class<GYModelObjectProtocol>)leftClass
+                         as:(NSString *)leftAs
+                 properties:(NSArray *)leftProperties
+                  jsonClass:(Class<GYModelObjectProtocol>)rightClass
+                         as:(NSString *)rightAs
+                   joinType:(GYSQLJoinType)joinType
+              joinCondition:(NSString *)joinCondition
+                      where:(NSString *)where
+                  arguments:(NSArray *)arguments {
+    NSAssert([[leftClass dbName] isEqualToString:[rightClass dbName]], @"Tables in join sql should come from the same db");
+    
+    NSString *columnSql = @"*";
+    if (leftProperties.count) {
+        columnSql = [self columnSqlForClass:leftClass properties:leftProperties withPrefix:YES];
+    }
+    
+    NSString *join = @"INNER JOIN";
+    switch (joinType) {
+        case GYSQLJoinTypeInner:
+            break;
+        case GYSQLJoinTypeLeft:
+            join = @"LEFT OUTER JOIN";
+            break;
+        case GYSQLJoinTypeCross:
+            NSAssert(joinCondition.length == 0, @"Cross join cannot have join condition");
+            join = @"CROSS JOIN";
+            break;
+        default:
+            NSAssert(NO, @"Invalid join type");
+            break;
+    }
+    
+    NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"SELECT %@ FROM %@ AS %@ %@ %@ AS %@ ON %@", columnSql, [leftClass tableName], leftAs, join, [rightClass tableName], rightAs, joinCondition];
+    if (where) {
+        [sql appendFormat:@" %@", where];
+    }
+    
+    NSMutableArray *leftObjects = [[NSMutableArray alloc] init];
+    NSUInteger leftLength = leftProperties.count;
+    if (!leftLength) {
+        leftLength = [GYDCUtilities persistentPropertiesForClass:leftClass].count;
+    }
+    NSMutableArray *leftIndexedProperties = [[NSMutableArray alloc] initWithCapacity:leftLength];
+    
+    GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:leftClass];
+    [self databaseInfoForClass:rightClass];
+    [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+        FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
+        while ([resultSet next]) {
+            [leftObjects addObject:[self objectOfClass:leftClass resultSet:resultSet range:NSMakeRange(0, leftLength) properties:leftIndexedProperties]];
+        }
+        [resultSet close];
+    }];
+    
+    return leftObjects;
+}
+
 - (NSString *)columnSqlForClass:(Class<GYModelObjectProtocol>)modelClass
                      properties:(NSArray *)properties
                      withPrefix:(BOOL)withPrefix {

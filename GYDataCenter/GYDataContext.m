@@ -228,6 +228,41 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     }];
     return result;
 }
+- (NSArray *)getObjects:(Class<GYModelObjectProtocol>)leftClass
+                     as:(NSString *)leftAs
+             properties:(NSArray *)leftProperties
+              jsonClass:(Class<GYModelObjectProtocol>)rightClass
+                     as:(NSString *)rightAs
+               joinType:(GYSQLJoinType)joinType
+          joinCondition:(NSString *)joinCondition
+                  where:(NSString *)where
+              arguments:(NSArray *)arguments {
+    GYDataContextQueue *queue = [self queueForDBName:[leftClass dbName]];
+    __block NSArray *result;
+    [queue dispatchSync:^{
+        result = [_dbRunner objectsOfClass:leftClass
+                                        as:leftAs
+                                properties:leftProperties
+                                 jsonClass:rightClass
+                                        as:rightAs
+                                  joinType:joinType
+                             joinCondition:joinCondition
+                                     where:where
+                                 arguments:arguments];
+        if (!leftProperties.count) {
+            NSMutableDictionary *cache = [self tableCacheFromDBCache:queue.cache class:leftClass];
+            if (cache) {
+                NSArray *objects = [result firstObject];
+                for (id<GYModelObjectProtocol> object in objects) {
+                    if (!object.isCacheHit) {
+                        [cache setObject:object forKey:[(id)object valueForKey:[leftClass primaryKey]]];
+                    }
+                }
+            }
+        }
+    }];
+    return result;
+}
 
 - (NSArray *)getIds:(Class<GYModelObjectProtocol>)modelClass
               where:(NSString *)where

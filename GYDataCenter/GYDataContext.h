@@ -113,6 +113,40 @@
                   where:(NSString *)where
               arguments:(NSArray *)arguments;
 
+/** Join two tables.
+ *
+ * @param leftClass Class of the first join table.
+ *
+ * @param leftProperties Properties of leftClass that you need. Pass nil to get values of all properties.
+ *
+ * @param leftAs Left table name as.
+ *
+ * @param jsonClass Class of the second join table.
+ *
+ * @param rightAs Right table name as.
+ *
+ * @param joinType GYSQLJoinTypeInner, GYSQLJoinTypeLeft or GYSQLJoinTypeCross.
+ *
+ * @param joinCondition Join condition. For example: 'leftTableName.property1 = rightTableName.property2'.
+ *
+ * @param where Where clause of SQL. Use '?'s as placeholders for arguments.
+ *
+ * @param arguments Values to bind to the where clause.
+ *
+ * @return @[`Objects of left class`].
+ *
+ */
+
+- (NSArray *)getObjects:(Class<GYModelObjectProtocol>)leftClass
+                     as:(NSString *)leftAs
+             properties:(NSArray *)leftProperties
+              jsonClass:(Class<GYModelObjectProtocol>)rightClass
+                     as:(NSString *)rightAs
+               joinType:(GYSQLJoinType)joinType
+          joinCondition:(NSString *)joinCondition
+                  where:(NSString *)where
+              arguments:(NSArray *)arguments;
+
 /**
  *
  * @param modelClass Class of the model objects that you want to query.

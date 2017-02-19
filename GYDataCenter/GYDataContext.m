@@ -252,8 +252,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         if (!leftProperties.count) {
             NSMutableDictionary *cache = [self tableCacheFromDBCache:queue.cache class:leftClass];
             if (cache) {
-                NSArray *objects = [result firstObject];
-                for (id<GYModelObjectProtocol> object in objects) {
+                for (id<GYModelObjectProtocol> object in result) {
                     if (!object.isCacheHit) {
                         [cache setObject:object forKey:[(id)object valueForKey:[leftClass primaryKey]]];
                     }

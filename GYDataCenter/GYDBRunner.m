@@ -265,6 +265,8 @@ static const double kTransactionTimeInterval = 1;
     NSString *columnSql = @"*";
     if (leftProperties.count) {
         columnSql = [self columnSqlForClass:leftClass properties:leftProperties withPrefix:YES];
+        columnSql = [columnSql stringByReplacingOccurrencesOfString:[leftClass tableName]
+                                                         withString:leftAs];
     }
     
     NSString *join = @"INNER JOIN";

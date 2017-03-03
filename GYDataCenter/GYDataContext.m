@@ -184,6 +184,17 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     }];
 }
 
+- (NSArray *)queryWithSQL:(NSString *)sql
+                 inDbName:(NSString *)dbName {
+    GYDataContextQueue *queue = [self queueForDBName:dbName];
+    __block NSArray *result;
+    [queue dispatchSync:^{
+        result = [_dbRunner queryWithSQL:sql
+                                inDbName:dbName];
+    }];
+    return result;
+}
+
 - (NSArray *)getObjects:(Class<GYModelObjectProtocol>)leftClass
              properties:(NSArray *)leftProperties
                 objects:(Class<GYModelObjectProtocol>)rightClass

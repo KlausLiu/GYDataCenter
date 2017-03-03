@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, GYSQLJoinType) {
                 arguments:(NSArray *)arguments;
 
 /**
- *  execute sql in db
+ *  async execute sql in db
  *
  *  @param sql
  *  @param dbName
@@ -60,6 +60,16 @@ typedef NS_ENUM(NSInteger, GYSQLJoinType) {
 - (void)queryWithSQL:(NSString *)sql
             inDbName:(NSString *)dbName
       resultSetBlock:(void(^)(FMResultSet *))resultSetBlock;
+/**
+ *  execute sql in db
+ *
+ *  @param sql
+ *  @param dbName
+ *
+ *  @return [{column1:value1,column2:value2}, ...]
+ */
+- (NSArray *)queryWithSQL:(NSString *)sql
+                 inDbName:(NSString *)dbName;
 
 /**
  *

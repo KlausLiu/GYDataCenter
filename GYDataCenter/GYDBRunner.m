@@ -148,6 +148,30 @@ static const double kTransactionTimeInterval = 1;
     }];
 }
 
+- (NSArray *)queryWithSQL:(NSString *)sql
+                 inDbName:(NSString *)dbName {
+    NSMutableArray<NSDictionary<NSString *, id> *> *ret = @[].mutableCopy;
+    GYDatabaseInfo *databaseInfo = [self databaseInfoForDbName:dbName];
+    [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+        FMResultSet *resultSet = [db executeQuery:sql];
+        while ([resultSet next]) {
+            NSMutableDictionary<NSString *, id> *dic = @{}.mutableCopy;
+            for (int i = 0; i < resultSet.columnCount; i ++) {
+                NSString *columnName = [resultSet columnNameForIndex:i];
+                id obj = [resultSet objectForColumnIndex:i];
+                if (![obj isKindOfClass:NSNull.class]) {
+                    // 非NSNull
+                    [dic setObject:obj
+                            forKey:columnName];
+                }
+            }
+            [ret addObject:dic];
+        }
+        [resultSet close];
+    }];
+    return ret;
+}
+
 - (NSArray *)objectsOfClass:(Class<GYModelObjectProtocol>)modelClass
                  properties:(NSArray *)properties
                       where:(NSString *)where

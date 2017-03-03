@@ -82,6 +82,17 @@
             inDbName:(NSString *)dbName
       resultSetBlock:(void(^)(FMResultSet *))resultSetBlock;
 
+/**
+ *  execute sql in db
+ *
+ *  @param sql
+ *  @param dbName
+ *
+ *  @return [{column1:value1,column2:value2}, ...]
+ */
+- (NSArray *)queryWithSQL:(NSString *)sql
+                 inDbName:(NSString *)dbName;
+
 /** Join two tables.
  *
  * @param leftClass Class of the first join table.

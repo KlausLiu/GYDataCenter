@@ -111,6 +111,9 @@ static const double kTransactionTimeInterval = 1;
     
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:modelClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql
                              withArgumentsInArray:arguments];
         while ([resultSet next]) {
@@ -129,6 +132,12 @@ static const double kTransactionTimeInterval = 1;
             [result addObject:data];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     return result;
 }
@@ -138,6 +147,9 @@ static const double kTransactionTimeInterval = 1;
       resultSetBlock:(void(^)(FMResultSet *))resultSetBlock {
     GYDatabaseInfo *databaseInfo = [self databaseInfoForDbName:dbName];
     [databaseInfo.databaseQueue asyncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql];
         while ([resultSet next]) {
             if (resultSetBlock) {
@@ -145,6 +157,12 @@ static const double kTransactionTimeInterval = 1;
             }
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@", cost, sql);
+        }
+#endif
     }];
 }
 
@@ -153,6 +171,9 @@ static const double kTransactionTimeInterval = 1;
     NSMutableArray<NSDictionary<NSString *, id> *> *ret = @[].mutableCopy;
     GYDatabaseInfo *databaseInfo = [self databaseInfoForDbName:dbName];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql];
         while ([resultSet next]) {
             NSMutableDictionary<NSString *, id> *dic = @{}.mutableCopy;
@@ -168,6 +189,12 @@ static const double kTransactionTimeInterval = 1;
             [ret addObject:dic];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@", cost, sql);
+        }
+#endif
     }];
     return ret;
 }
@@ -199,12 +226,21 @@ static const double kTransactionTimeInterval = 1;
     
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:modelClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
         while ([resultSet next]) {
             id object = [self objectOfClass:modelClass resultSet:resultSet range:NSMakeRange(0, length) properties:indexedProperties];
             [objects addObject:object];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     
     return objects;
@@ -264,12 +300,21 @@ static const double kTransactionTimeInterval = 1;
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:leftClass];
     [self databaseInfoForClass:rightClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
         while ([resultSet next]) {
             [leftObjects addObject:[self objectOfClass:leftClass resultSet:resultSet range:NSMakeRange(0, leftLength) properties:leftIndexedProperties]];
             [rightObjects addObject:[self objectOfClass:rightClass resultSet:resultSet range:NSMakeRange(leftLength, rightLength) properties:rightIndexedProperties]];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     
     return @[ leftObjects, rightObjects ];
@@ -324,11 +369,20 @@ static const double kTransactionTimeInterval = 1;
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:leftClass];
     [self databaseInfoForClass:rightClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
         while ([resultSet next]) {
             [leftObjects addObject:[self objectOfClass:leftClass resultSet:resultSet range:NSMakeRange(0, leftLength) properties:leftIndexedProperties]];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     
     return leftObjects;
@@ -496,12 +550,21 @@ static const double kTransactionTimeInterval = 1;
     
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:modelClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
         while ([resultSet next]) {
             id objectId = [resultSet objectForColumnName:primaryKeyColumn];
             [ids addObject:objectId];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     
     return ids;
@@ -520,11 +583,20 @@ static const double kTransactionTimeInterval = 1;
     
     GYDatabaseInfo *databaseInfo = [self databaseInfoForClass:modelClass];
     [databaseInfo.databaseQueue syncInDatabase:^(FMDatabase *db) {
+#ifdef DEBUG
+        CFTimeInterval start = CACurrentMediaTime();
+#endif
         FMResultSet *resultSet = [db executeQuery:sql withArgumentsInArray:arguments];
         if ([resultSet next]) {
             result = [resultSet objectForColumnIndex:0];
         }
         [resultSet close];
+#ifdef DEBUG
+        CFTimeInterval cost = CACurrentMediaTime() - start;
+        if (cost > 0.009) {
+            NSLog(@"[GYDataCenter SQL Cost][Warning!!] cost:%.4f, sql:%@, args:%@", cost, sql, arguments);
+        }
+#endif
     }];
     if (![result isKindOfClass:[NSNull class]]) {
         return result;
